@@ -17,15 +17,16 @@ namespace Binode.Presentation.WinForm
         {
             InitializeComponent();
         }
+        private List<Kategori> kategoriler;
 
         private void button1_Click(object sender, EventArgs e)
         {
-           
+
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            var kategoriler = DemoData.DemoKategoriGetir();
+            kategoriler = DemoData.DemoKategoriGetir();
             KategoriyiTreeviewAEkle(kategoriler, null);
         }
 
@@ -33,14 +34,14 @@ namespace Binode.Presentation.WinForm
         {
             foreach (var kategori in kategoriler)
             {
-                if(node is null)
+                if (node is null)
                 {
                     var nnode = new TreeNode(kategori.Isim);
                     nnode.ContextMenuStrip = contextMenuStrip1;
                     treeKategori.Nodes.Add(nnode);
                     nnode.Tag = kategori;
 
-                    if(kategori.AltKategori != null)
+                    if (kategori.AltKategori != null)
                     {
                         KategoriyiTreeviewAEkle(kategori.AltKategori, nnode);
                     }
@@ -53,7 +54,7 @@ namespace Binode.Presentation.WinForm
                     nnode.Tag = kategori;
                     if (kategori.AltKategori != null)
                     {
-                        KategoriyiTreeviewAEkle(kategori.AltKategori,nnode);
+                        KategoriyiTreeviewAEkle(kategori.AltKategori, nnode);
                     }
                 }
             }
@@ -72,7 +73,7 @@ namespace Binode.Presentation.WinForm
             var kategori = node.Tag as Kategori;
 
             //Hatalı olabilir
-            if(kategori?.Icerik?.Count == null)
+            if (kategori?.Icerik?.Count == null)
             {
                 return;
             }
@@ -91,13 +92,88 @@ namespace Binode.Presentation.WinForm
 
             //listView1.Groups.Add(group);
 
-            if(node.Nodes != null)
+            if (node.Nodes != null)
             {
                 foreach (TreeNode subNode in node.Nodes)
                 {
                     ListViewDoldur(subNode);
                 }
             }
+        }
+
+        private void toolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void toolStripTextBox1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == 13)
+            {
+                treeKategori.SelectedNode.Text = ((ToolStripTextBox)sender).Text;
+
+            }
+        }
+
+        private void toolStripMenuItem3_Click(object sender, EventArgs e)
+        {
+            treeKategori.SelectedNode.Remove();
+        }
+
+
+        private void toolStripTextBox2_KeyPress_1(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == 13)
+            {
+
+                var secilikategori = (Kategori)treeKategori.SelectedNode.Tag;
+                secilikategori.AltKategori.Add(new Kategori
+                {
+                    Isim = ((ToolStripTextBox)sender).Text,
+                    SiraNumarasi = secilikategori.AltKategori.Count,
+                    EklenmeTarihi = DateTime.Now,
+                    AciklamaNotu = (((ToolStripTextBox)sender).Text).ToString() + " dersine ait notlar",
+                    UstKategori = secilikategori
+
+                });
+                treeKategori.Nodes.Clear();
+                KategoriyiTreeviewAEkle(kategoriler, null);
+            }
+
+        }
+        private void fileDialog(object sender, EventArgs e)
+        {
+            OpenFileDialog openfile = new OpenFileDialog();
+
+            var icerik = ((ToolStripMenuItem)sender).Text;
+            switch (icerik)
+            {
+                case "Metin":
+                    openfile.Filter = "Text Dosyası |*.txt|Word Dosyası |*.docx";
+                    break;
+                case "Pdf":
+                    openfile.Filter = "Pdf Dosyası |*.pdf";
+                    break;
+                case "Gorsel":
+                    openfile.Filter = "Resim Dosyası |*.jpg;*.png";
+                    break;
+                case "Ses":
+                    openfile.Filter = "Ses Dosyası |*.mp3;*.wav";
+                    break;
+                case "Video":
+                    openfile.Filter = "Video Dosyası |*.wmp;*.mp4";
+                    break;
+            }
+            if (DialogResult.OK == openfile.ShowDialog())
+            {
+                Kategori secilikategori = treeKategori.SelectedNode.Tag as Kategori;
+                secilikategori.Icerik.Add(new Icerik
+                {
+                    Isim = openfile.FileName,
+                    EklenmeTarihi = DateTime.Now,
+                    Kategori = secilikategori
+                });
+            };
         }
     }
 }
